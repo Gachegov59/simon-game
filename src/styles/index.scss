@@ -1,0 +1,31 @@
+@import "constans.scss";
+@import "mixin.scss";
+@import "simon.scss";
+
+//base
+*, *:before, *:after {
+  box-sizing: border-box;
+}
+
+html {
+  font-family: $fontRoboto;
+  font-size: $base-font-size;
+  color: black;
+  height: 100%;
+  //@include tablet {
+  //  font-size: 12px;
+  //}
+}
+
+ul {
+  padding: 0;
+  li {
+    list-style-type: none;
+  }
+}
+.container {
+  max-width: 500px;
+   padding: 0 15px;
+  margin: auto;
+ }
+
