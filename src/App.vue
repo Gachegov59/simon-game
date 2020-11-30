@@ -24,7 +24,7 @@
 
 
                 .simon__wrap-block
-                    .simon__wrap-block__option
+                    .simon__option
                         label.simon__option-item(for="begin") Легкий
                             input(type="radio" name="level" id="begin" value=1.5  v-model.number="game.level" checked )
                         label.simon__option-item(for="middle") Средний
@@ -32,17 +32,21 @@
                         label.simon__option-item(for="hard") Сложный
                             input(type="radio" name="level" id="hard" value=0.4 v-model.number="game.level")
                         label.simon__option-item
-                    button.simon__btn(@click="btnStart = !btnStart" :class="{_active: this.btnStart}")
+                    button.simon__btn(@click="btnStart = !btnStart" :class="{_active: this.btnStart}" v-if="!this.gameOver")
                         span(v-if="!btnStart") start
                         span(v-else) Stop
-                    h2 game
-                    .simon__data
-                        div selection {{this.game.selection}}
-                        div round {{this.game.round}}
-                        div options.round {{this.options.round}}
-                        h2 player
-                        div selection {{this.player.selection}}
-                        div round {{this.player.round}}
+                    button.simon__btn(@click="btnRestart = !btnRestart" :class="{_active: this.btnStart}" v-if="this.gameOver")
+                        span restart
+
+                    //div
+                        h2 game
+                        .simon__data
+                            div selection {{this.game.selection}}
+                            div round {{this.game.round}}
+                            div options.round {{this.options.round}}
+                            h2 player
+                            div selection {{this.player.selection}}
+                            div round {{this.player.round}}
 </template>
 
 <script>
@@ -57,6 +61,7 @@
                 'https://s3.amazonaws.com/freecodecamp/simonSound4.mp3'
             ],
             btnStart: false,
+            btnRestart: false,
             gameOver: false,
             win: false,
             options: {
@@ -80,6 +85,11 @@
                     this.start()
                 }
             },
+            btnRestart: function () {
+                if (this.btnRestart) {
+                    this.restart()
+                }
+            },
             gameOverEnd: function () {
                 if (this.gameOver) {
                     this.game.selection = []
@@ -94,6 +104,22 @@
                 this.game.selection = []
                 this.player.selection = []
                 this.playing()
+            },
+            restart() {
+                this.gameOver = false
+
+                this.game.round = 0
+                this.player.round = 0
+                this.options.round = 1
+
+                this.game.selection = []
+                this.player.selection = []
+                this.btnRestart = false
+
+                setTimeout(() => {
+                    this.playing()
+                },  2000 )
+
             },
 
             // ХОДИТ ИГРА
@@ -121,15 +147,18 @@
             // ХОДИТ ИГРОК
             startPlayer(i) {
                 this.visual(i)
-                this.player.selection.push(i)
-                this.checked(i) // ПРОВЕРКА С ХОДОМ ИГРЫ
+                if (this.btnStart) {
+                    this.player.selection.push(i)
+                    this.checked(i) // ПРОВЕРКА С ХОДОМ ИГРЫ
+                }
+
             },
 
             // ПРОВЕРКА
             checked() {
                 let gameSelected = this.game.selection.slice()
                 let playerSelected = this.player.selection.slice()
-                let helps=0
+                let allcheck=0
                 for (let i = 0; i < playerSelected.length; i++) {
                     // this.gameOver = gameSelected[i] !== playerSelected[i];
                     if (gameSelected[i] === playerSelected[i]) {
@@ -137,15 +166,15 @@
                     } else {
                         this.gameOver = true
                     }
-                    console.log('gameSelected[i] ',gameSelected[i] )
-                    console.log('playerSelected[i] ',playerSelected[i] )
-                    // console.log('gameSelected.length ',gameSelected.length)
-                    helps++
+
+                    allcheck++
                 }
-                if (helps === gameSelected.length ) {
-                    console.log('все заебок')
-                    this.roundClear()
-                    this.playing()
+                if (allcheck === gameSelected.length ) {
+                    setTimeout(() => {
+                        this.roundClear()
+                        this.playing()
+                    }, this.game.level * 500)
+
                 }
 
             },
@@ -165,6 +194,9 @@
             visual(i) {
                 new Audio(this.sounds[i]).play()
                 this.options.part = i
+                setTimeout(() => {
+                    this.clearPart()
+                }, this.game.level * 500)
             }
         },
 
